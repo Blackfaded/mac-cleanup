@@ -1,36 +1,102 @@
 # mac-cleanup
 
-A conservative, private macOS cleanup CLI for developer-tool caches and generated data.
+A conservative interactive macOS cleanup CLI for developer-tool caches, generated data, emulators, and local models.
 
-## Safety
+`mac-cleanup` always begins with a dry run. It calculates available disk space, finds supported cleanup candidates, and shows their estimated sizes and effects before you can select anything for deletion.
 
-- `npm run dev` starts with a read-only size and effect preview, then offers target selection.
-- Deletion requires interactive selection, acknowledgement, and typing `CLEAN`.
-- It never scans or changes `Downloads`, `Documents`, source projects, credentials, or system files.
-- Raw deletion is restricted to explicit cache paths under the current user's home directory and refuses symbolic links.
-- Docker, package-manager, simulator, and Ollama cleanup use their native commands.
+## Requirements
+
+- macOS
+- Node.js 18 or later
+- Yarn 1.x
+
+Some cleanup candidates also require their native tool to be installed, such as Docker, Xcode Command Line Tools, npm, Yarn, pnpm, or Ollama.
+
+## Install
+
+Install the package globally:
+
+```bash
+npm install --global mac-cleanup
+```
 
 ## Usage
 
-```bash
-npm install
-npm run dev
-npm run typecheck
-```
-
-Run directly without an npm script:
+Run the interactive cleanup flow:
 
 ```bash
-npx tsx src/index.ts
+mac-cleanup
 ```
 
-## Cleanup candidates
+The CLI:
 
-- npm, nvm, Yarn, pnpm, and Gradle caches
-- Xcode DerivedData and unavailable iOS simulators
-- Individually selectable Android virtual devices
-- Docker build cache and dangling images
-- Individually selectable Ollama models
-- Pulumi provider plugins, Puppeteer browser cache, and OpenCode cache
+1. Discovers available cleanup candidates and calculates their sizes.
+2. Shows a dry-run summary with the effect of every candidate.
+3. Lets you select individual candidates with checkboxes.
+4. Shows the selected targets again.
+5. Requires acknowledgement and typing `CLEAN` before it deletes only those targets.
 
-Candidates appear only when their relevant paths and required native tools are available.
+Selecting nothing, declining acknowledgement, or entering anything other than `CLEAN` exits without deletion.
+
+## Cleanup Targets
+
+Candidates appear only when their required path exists and, where needed, their native command is available.
+
+| Category | Targets |
+| --- | --- |
+| JavaScript | npm cache, nvm download cache, Yarn cache, pnpm unreferenced store packages |
+| Build tools | Gradle caches, Xcode DerivedData |
+| Apple simulators | Individually selectable unavailable iOS simulators |
+| Android | Individually selectable Android virtual devices |
+| Containers | Docker build cache, Docker dangling images |
+| Local AI | Individually selectable Ollama models |
+| Other tools | Pulumi provider plugins, Puppeteer browser cache, OpenCode cache |
+
+## Safety
+
+- The initial scan and size report are read-only.
+- There is no non-interactive deletion mode.
+- Only selected targets can be deleted.
+- Deletion requires both an acknowledgement and the exact confirmation text `CLEAN`.
+- Native commands manage npm, Yarn, pnpm, Docker, Xcode simulators, and Ollama data.
+- Direct directory deletion is limited to explicit paths beneath the current user's home directory.
+- Direct deletion rejects symbolic links and non-directory paths.
+- `Downloads` is never scanned, listed, or changed.
+- `Documents`, source projects, credentials, and system files are never scanned or changed.
+- A failure for one selected target does not prevent the remaining selected targets from running.
+
+## Development
+
+```bash
+# Run the CLI
+yarn dev
+
+# Check types
+yarn typecheck
+
+# Check formatting
+yarn format:check
+
+# Run lint rules
+yarn lint
+
+# Apply Biome formatting, lint, and safe fixes
+yarn biome:fix
+```
+
+Lefthook installs Git hooks during `yarn install`:
+
+- `pre-commit` runs linting and formatting checks.
+- `commit-msg` enforces Conventional Commit messages through Commitlint.
+
+Examples:
+
+```text
+feat: add a cleanup target
+fix: reject paths outside the home directory
+chore: update dependencies
+```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
