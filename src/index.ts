@@ -49,7 +49,7 @@ async function cleanup(): Promise<void> {
 	const ids = await checkbox({
 		message: "Select cleanup targets (Space selects, Enter confirms):",
 		choices: targets.map((target) => ({
-			name: `${target.name} (${formatSize(target.bytes)}) - ${target.consequence}`,
+			name: `${target.name} (${formatSize(target.bytes)})`,
 			value: target.id,
 		})),
 	});
