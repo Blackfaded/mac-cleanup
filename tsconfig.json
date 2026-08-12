@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"noUncheckedIndexedAccess": true,
+		"strict": true,
+		"target": "ES2023",
+		"verbatimModuleSyntax": true
+	},
+	"include": ["src/**/*.ts"]
+}

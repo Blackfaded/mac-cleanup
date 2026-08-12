@@ -1,0 +1,22 @@
+{
+	"name": "mac-cleanup",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Conservative interactive cleanup utility for macOS developer tools",
+	"type": "module",
+	"scripts": {
+		"dev": "tsx src/index.ts",
+		"biome:fix": "biome check --fix --unsafe",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@inquirer/prompts": "7.3.2",
+		"commander": "13.1.0"
+	},
+	"devDependencies": {
+		"@types/node": "24.13.3",
+		"@biomejs/biome": "2.5.8",
+		"tsx": "4.19.3",
+		"typescript": "5.8.3"
+	}
+}
