@@ -12,12 +12,14 @@ A conservative interactive macOS cleanup CLI for developer-tool caches, generate
 
 Some cleanup candidates also require their native tool to be installed, such as Docker, Xcode Command Line Tools, npm, Yarn, pnpm, or Ollama.
 
-## Install
+## Local Setup
 
-Install the package globally:
+From a local checkout:
 
 ```bash
-npm install --global mac-cleanup
+git clone <repository-url> mac-cleanup
+cd mac-cleanup
+yarn install
 ```
 
 ## Usage
@@ -25,7 +27,7 @@ npm install --global mac-cleanup
 Run the interactive cleanup flow:
 
 ```bash
-mac-cleanup
+yarn dev
 ```
 
 The CLI:
