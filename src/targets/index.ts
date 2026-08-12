@@ -9,7 +9,9 @@ import { discoverOpenCodeTargets } from "./opencode.js";
 import { discoverPnpmTargets } from "./pnpm.js";
 import { discoverPulumiTargets } from "./pulumi.js";
 import { discoverPuppeteerTargets } from "./puppeteer.js";
-import { discoverIosSimulatorTargets, discoverXcodeTargets } from "./xcode.js";
+import { discoverIosSimulatorRuntimeTargets } from "./simruntime.js";
+import { discoverIosSimulatorTargets } from "./simtarget.js";
+import { discoverXcodeTargets } from "./xcode.js";
 import { discoverYarnTargets } from "./yarn.js";
 
 export async function discoverTargets(): Promise<CleanupTarget[]> {
@@ -26,6 +28,7 @@ export async function discoverTargets(): Promise<CleanupTarget[]> {
 		discoverOpenCodeTargets,
 		discoverAndroidTargets,
 		discoverIosSimulatorTargets,
+		discoverIosSimulatorRuntimeTargets,
 		discoverOllamaTargets,
 	];
 

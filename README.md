@@ -47,7 +47,7 @@ Candidates appear only when their required path exists and, where needed, their 
 | --- | --- |
 | JavaScript | npm cache, nvm download cache, Yarn cache, pnpm unreferenced store packages |
 | Build tools | Gradle caches, Xcode DerivedData |
-| Apple simulators | Individually selectable iOS simulators |
+| Apple simulators | Individually selectable iOS simulators and installed iOS runtimes |
 | Android | Individually selectable Android virtual devices |
 | Containers | Docker build cache, Docker dangling images |
 | Local AI | Individually selectable Ollama models |
