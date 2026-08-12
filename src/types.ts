@@ -8,3 +8,5 @@ export type CleanupTarget = {
 	size?: () => Promise<number | undefined>;
 	clean: () => Promise<void>;
 };
+
+export type TargetDiscovery = () => Promise<CleanupTarget[]>;

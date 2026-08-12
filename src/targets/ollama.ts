@@ -1,7 +1,7 @@
 import { join } from "node:path";
 
 import { commandExists, run } from "../lib/command.js";
-import { home } from "../lib/filesystem.js";
+import { exists, home } from "../lib/filesystem.js";
 import type { CleanupTarget } from "../types.js";
 
 function ollamaBytes(size: string): number | undefined {
@@ -24,8 +24,9 @@ function ollamaBytes(size: string): number | undefined {
 		: Number(value) * multiplier[unit];
 }
 
-export async function ollamaTargets(): Promise<CleanupTarget[]> {
-	if (!(await commandExists("ollama"))) return [];
+export async function discoverOllamaTargets(): Promise<CleanupTarget[]> {
+	const path = join(home, ".ollama", "models");
+	if (!(await exists(path)) || !(await commandExists("ollama"))) return [];
 
 	try {
 		const output = await run("ollama", ["list"]);
@@ -41,7 +42,7 @@ export async function ollamaTargets(): Promise<CleanupTarget[]> {
 					{
 						id: `ollama-${name}`,
 						name: `Ollama model: ${name}`,
-						paths: [join(home, ".ollama", "models")],
+						paths: [path],
 						description: "A locally downloaded Ollama language model.",
 						consequence:
 							"The model will be unavailable until downloaded again with Ollama.",

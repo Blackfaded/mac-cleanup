@@ -5,7 +5,7 @@ import { exists, home, removeAllowedDirectory } from "../lib/filesystem.js";
 import { directorySize } from "../lib/size.js";
 import type { CleanupTarget } from "../types.js";
 
-export async function androidTargets(): Promise<CleanupTarget[]> {
+export async function discoverAndroidTargets(): Promise<CleanupTarget[]> {
 	const directory = join(home, ".android", "avd");
 	if (!(await exists(directory))) return [];
 

@@ -1,51 +1,33 @@
-import { commandExists } from "../lib/command.js";
-import { exists } from "../lib/filesystem.js";
-import type { CleanupTarget } from "../types.js";
-import { androidTargets } from "./android.js";
-import { dockerTargets } from "./docker.js";
-import { gradleTargets } from "./gradle.js";
-import { npmTargets } from "./npm.js";
-import { nvmTargets } from "./nvm.js";
-import { ollamaTargets } from "./ollama.js";
-import { opencodeTargets } from "./opencode.js";
-import { pnpmTargets } from "./pnpm.js";
-import { pulumiTargets } from "./pulumi.js";
-import { puppeteerTargets } from "./puppeteer.js";
-import { iosSimulatorTargets, xcodeTargets } from "./xcode.js";
-import { yarnTargets } from "./yarn.js";
+import type { CleanupTarget, TargetDiscovery } from "../types.js";
+import { discoverAndroidTargets } from "./android.js";
+import { discoverDockerTargets } from "./docker.js";
+import { discoverGradleTargets } from "./gradle.js";
+import { discoverNpmTargets } from "./npm.js";
+import { discoverNvmTargets } from "./nvm.js";
+import { discoverOllamaTargets } from "./ollama.js";
+import { discoverOpenCodeTargets } from "./opencode.js";
+import { discoverPnpmTargets } from "./pnpm.js";
+import { discoverPulumiTargets } from "./pulumi.js";
+import { discoverPuppeteerTargets } from "./puppeteer.js";
+import { discoverIosSimulatorTargets, discoverXcodeTargets } from "./xcode.js";
+import { discoverYarnTargets } from "./yarn.js";
 
 export async function discoverTargets(): Promise<CleanupTarget[]> {
-	const commands: Record<string, string> = {
-		"npm-cache": "npm",
-		"yarn-cache": "yarn",
-		"pnpm-store": "pnpm",
-		"docker-build-cache": "docker",
-		"docker-dangling-images": "docker",
-	};
-	const candidates = [
-		...npmTargets,
-		...yarnTargets,
-		...pnpmTargets,
-		...gradleTargets,
-		...xcodeTargets,
-		...dockerTargets,
-		...pulumiTargets,
-		...nvmTargets,
-		...puppeteerTargets,
-		...opencodeTargets,
-		...(await androidTargets()),
-		...(await iosSimulatorTargets()),
-		...(await ollamaTargets()),
+	const discoveries: TargetDiscovery[] = [
+		discoverNpmTargets,
+		discoverYarnTargets,
+		discoverPnpmTargets,
+		discoverGradleTargets,
+		discoverXcodeTargets,
+		discoverDockerTargets,
+		discoverPulumiTargets,
+		discoverNvmTargets,
+		discoverPuppeteerTargets,
+		discoverOpenCodeTargets,
+		discoverAndroidTargets,
+		discoverIosSimulatorTargets,
+		discoverOllamaTargets,
 	];
-	const available: CleanupTarget[] = [];
 
-	for (const target of candidates) {
-		if (!(await Promise.all(target.paths.map(exists))).some(Boolean)) continue;
-		const command = target.id.startsWith("ios-simulator-")
-			? "xcrun"
-			: commands[target.id];
-		if (command && !(await commandExists(command))) continue;
-		available.push(target);
-	}
-	return available;
+	return (await Promise.all(discoveries.map((discover) => discover()))).flat();
 }
