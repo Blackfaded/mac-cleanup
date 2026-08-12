@@ -2,7 +2,7 @@
 
 A conservative interactive macOS cleanup CLI for developer-tool caches, generated data, emulators, and local models.
 
-`mac-cleanup` always begins with a dry run. It calculates available disk space, finds supported cleanup candidates, and shows their estimated sizes and effects before you can select anything for deletion.
+`mac-cleanup` finds supported cleanup candidates, calculates their estimated sizes, and lets you select exactly what to delete.
 
 ## Requirements
 
@@ -31,10 +31,9 @@ mac-cleanup
 The CLI:
 
 1. Discovers available cleanup candidates and calculates their sizes.
-2. Shows a dry-run summary with the effect of every candidate.
-3. Lets you select individual candidates with checkboxes.
-4. Shows the selected targets again.
-5. Requires acknowledgement and typing `CLEAN` before it deletes only those targets.
+2. Lets you select individual candidates with checkboxes.
+3. Shows the selected targets again.
+4. Requires acknowledgement and typing `CLEAN` before it deletes only those targets.
 
 Selecting nothing, declining acknowledgement, or entering anything other than `CLEAN` exits without deletion.
 
@@ -54,7 +53,7 @@ Candidates appear only when their required path exists and, where needed, their 
 
 ## Safety
 
-- The initial scan and size report are read-only.
+- Discovery and size calculation are read-only.
 - There is no non-interactive deletion mode.
 - Only selected targets can be deleted.
 - Deletion requires both an acknowledgement and the exact confirmation text `CLEAN`.

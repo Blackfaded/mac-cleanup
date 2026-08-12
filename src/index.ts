@@ -19,15 +19,6 @@ async function withSizes(
 	);
 }
 
-function printTargets(
-	targets: Array<CleanupTarget & { bytes?: number }>,
-): void {
-	targets.forEach((target, index) => {
-		console.log(`\n${index + 1}. ${target.name} (${formatSize(target.bytes)})`);
-		console.log(`   Effect: ${target.consequence}`);
-	});
-}
-
 async function cleanup(): Promise<void> {
 	const targets = await withSizes(await discoverTargets());
 	console.log(
@@ -35,10 +26,6 @@ async function cleanup(): Promise<void> {
 	);
 	console.log(
 		"\nDry run. Review the candidates before choosing anything to remove.",
-	);
-	printTargets(targets);
-	console.log(
-		"\nExcluded entirely: Downloads, Documents, source projects, credentials, and system files.",
 	);
 
 	if (targets.length === 0) {
