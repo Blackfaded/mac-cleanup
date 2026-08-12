@@ -100,4 +100,13 @@ const program = new Command()
 	);
 
 program.action(cleanup);
-await program.parseAsync();
+
+try {
+	await program.parseAsync();
+} catch (error) {
+	if (error instanceof Error && error.name === "ExitPromptError") {
+		console.log("\nCancelled. Nothing was removed.");
+	} else {
+		throw error;
+	}
+}

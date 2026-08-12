@@ -36,10 +36,8 @@ type SimctlDevices = {
 	devices?: Record<string, SimulatorDevice[]>;
 };
 
-/** Lists only unavailable iOS devices so each can be reviewed and removed independently. */
-export async function unavailableIosSimulatorTargets(): Promise<
-	CleanupTarget[]
-> {
+/** Lists iOS devices individually so each can be reviewed and removed independently. */
+export async function iosSimulatorTargets(): Promise<CleanupTarget[]> {
 	try {
 		const output = await run("xcrun", ["simctl", "list", "devices", "--json"]);
 		const { devices = {} } = JSON.parse(output) as SimctlDevices;
@@ -48,22 +46,18 @@ export async function unavailableIosSimulatorTargets(): Promise<
 			if (!runtime.includes(".iOS-")) return [];
 
 			return simulators.flatMap((simulator) => {
-				if (
-					simulator.isAvailable !== false ||
-					!simulator.name ||
-					!simulator.udid
-				)
-					return [];
+				if (!simulator.name || !simulator.udid) return [];
 
 				const { name, udid } = simulator;
 				const path = join(simulatorDevices, udid);
+				const availability =
+					simulator.isAvailable === false ? "unavailable" : "available";
 				return [
 					{
 						id: `ios-simulator-${udid}`,
-						name: `Unavailable iOS simulator: ${name}`,
+						name: `iOS simulator (${availability}): ${name}`,
 						paths: [path],
-						description:
-							"An iOS simulator whose runtime is no longer installed.",
+						description: "An individually selectable iOS simulator device.",
 						consequence: "This simulator device will be permanently removed.",
 						size: () => directorySize(path),
 						clean: async () => {

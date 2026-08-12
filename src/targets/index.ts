@@ -11,7 +11,7 @@ import { opencodeTargets } from "./opencode.js";
 import { pnpmTargets } from "./pnpm.js";
 import { pulumiTargets } from "./pulumi.js";
 import { puppeteerTargets } from "./puppeteer.js";
-import { unavailableIosSimulatorTargets, xcodeTargets } from "./xcode.js";
+import { iosSimulatorTargets, xcodeTargets } from "./xcode.js";
 import { yarnTargets } from "./yarn.js";
 
 export async function discoverTargets(): Promise<CleanupTarget[]> {
@@ -34,7 +34,7 @@ export async function discoverTargets(): Promise<CleanupTarget[]> {
 		...puppeteerTargets,
 		...opencodeTargets,
 		...(await androidTargets()),
-		...(await unavailableIosSimulatorTargets()),
+		...(await iosSimulatorTargets()),
 		...(await ollamaTargets()),
 	];
 	const available: CleanupTarget[] = [];
