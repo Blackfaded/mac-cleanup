@@ -7,6 +7,10 @@
 	"scripts": {
 		"dev": "tsx src/index.ts",
 		"biome:fix": "biome check --fix --unsafe",
+		"lint": "biome lint",
+		"format:check": "biome format",
+		"commitlint": "commitlint",
+		"prepare": "lefthook install",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
@@ -16,7 +20,10 @@
 	"devDependencies": {
 		"@types/node": "24.13.3",
 		"@biomejs/biome": "2.5.8",
+		"@commitlint/cli": "20.5.0",
+		"@commitlint/config-conventional": "20.5.0",
 		"tsx": "4.19.3",
-		"typescript": "5.8.3"
+		"typescript": "5.8.3",
+		"lefthook": "2.1.5"
 	}
 }
