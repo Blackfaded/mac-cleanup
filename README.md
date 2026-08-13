@@ -17,7 +17,7 @@ Some cleanup candidates also require their native tool to be installed, such as 
 From a local checkout:
 
 ```bash
-git clone <repository-url> mac-cleanup
+git clone https://github.com/Blackfaded/mac-cleanup.git mac-cleanup
 cd mac-cleanup
 yarn install
 ```
@@ -28,6 +28,17 @@ Run the interactive cleanup flow:
 
 ```bash
 yarn dev
+```
+
+Project-module scanning is opt-in. Supply project directories to find `node_modules`, Nx caches, and Turborepo caches.
+
+| Option | Description |
+| --- | --- |
+| `--project-dir <path>` | Project directory to scan. Repeat for multiple roots; comma-separated paths are not supported. |
+| `--search-depth <number>` | Maximum directory depth to scan from each project directory. Applies only with `--project-dir`; defaults to `5`. A direct child has depth `1`. |
+
+```bash
+yarn dev --project-dir ~/Code --project-dir ~/Clients --search-depth 4
 ```
 
 The CLI:
@@ -45,7 +56,7 @@ Candidates appear only when their required path exists and, where needed, their 
 
 | Category | Targets |
 | --- | --- |
-| JavaScript | npm cache, nvm download cache, Yarn cache, pnpm unreferenced store packages |
+| JavaScript | Individually selectable project `node_modules`, Nx caches, Turborepo caches, npm cache, nvm download cache, Yarn cache, pnpm unreferenced store packages |
 | Build tools | Gradle caches, Xcode DerivedData |
 | Apple simulators | Individually selectable iOS simulators and installed iOS runtimes |
 | Android | Individually selectable Android virtual devices |
@@ -62,8 +73,9 @@ Candidates appear only when their required path exists and, where needed, their 
 - Native commands manage npm, Yarn, pnpm, Docker, Xcode simulators, and Ollama data.
 - Direct directory deletion is limited to explicit paths beneath the current user's home directory.
 - Direct deletion rejects symbolic links and non-directory paths.
-- `Downloads` is never scanned, listed, or changed.
-- `Documents`, source projects, credentials, and system files are never scanned or changed.
+- Project-module scanning is limited to directories explicitly provided through `--project-dir`, which must be real directories below the current user's home directory.
+- Symbolic links and unreadable directories are not scanned.
+- Only matching cleanup artifacts are listed; source files are not cleanup targets.
 - A failure for one selected target does not prevent the remaining selected targets from running.
 
 ## Development

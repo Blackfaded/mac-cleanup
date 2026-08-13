@@ -14,7 +14,7 @@ import { discoverIosSimulatorTargets } from "./simtarget.js";
 import { discoverXcodeTargets } from "./xcode.js";
 import { discoverYarnTargets } from "./yarn.js";
 
-export async function discoverTargets(): Promise<CleanupTarget[]> {
+export async function discoverModules(): Promise<CleanupTarget[]> {
 	const discoveries: TargetDiscovery[] = [
 		discoverNpmTargets,
 		discoverYarnTargets,
