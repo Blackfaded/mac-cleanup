@@ -102,16 +102,16 @@ const program = new Command()
 	)
 	.addHelpText(
 		"after",
-		"\nSafety: project-module scanning is limited to supplied project directories. Only selected cleanup targets can be changed.",
+		"\nSafety: Node.js project discovery is limited to supplied directories. Only selected cleanup targets can be changed.",
 	)
 	.option(
 		"--project-dir <path>",
-		"Project directory to scan for project modules; repeat for multiple directories",
+		"Directory to scan for Node.js project roots; repeat for multiple directories",
 		(value, previous: string[] = []) => [...previous, value],
 	)
 	.option(
 		"--search-depth <number>",
-		"Maximum directory depth to scan from each project directory",
+		"Maximum directory depth to search for Node.js project roots",
 		(value) => {
 			const depth = Number(value);
 			if (!Number.isInteger(depth) || depth < 1) {

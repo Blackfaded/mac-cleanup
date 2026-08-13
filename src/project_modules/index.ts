@@ -1,7 +1,5 @@
-import type { CleanupTarget, TargetDiscovery } from "../types.js";
-import { discoverNodeModulesTargets } from "./node-modules.js";
-import { discoverNxTargets } from "./nx.js";
-import { discoverTurboTargets } from "./turbo.js";
+import type { CleanupTarget } from "../types.js";
+import { discoverNodeProjectTargets } from "./node-projects.js";
 
 export async function discoverProjectModules(
 	projectDirectories: string[],
@@ -9,11 +7,5 @@ export async function discoverProjectModules(
 ): Promise<CleanupTarget[]> {
 	if (projectDirectories.length === 0) return [];
 
-	const discoveries: TargetDiscovery[] = [
-		() => discoverNodeModulesTargets(projectDirectories, searchDepth),
-		() => discoverNxTargets(projectDirectories, searchDepth),
-		() => discoverTurboTargets(projectDirectories, searchDepth),
-	];
-
-	return (await Promise.all(discoveries.map((discover) => discover()))).flat();
+	return discoverNodeProjectTargets(projectDirectories, searchDepth);
 }
