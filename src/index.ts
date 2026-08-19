@@ -4,8 +4,10 @@ import { checkbox, confirm, input } from "@inquirer/prompts";
 import { Command } from "commander";
 
 import { availableDiskSpace } from "./lib/disk.js";
+import { projectDirectory } from "./lib/filesystem.js";
 import { formatSize } from "./lib/size.js";
-import { discoverTargets } from "./targets/index.js";
+import { discoverModules } from "./modules/index.js";
+import { discoverProjectModules } from "./project_modules/index.js";
 import type { CleanupTarget } from "./types.js";
 
 async function withSizes(
@@ -19,8 +21,25 @@ async function withSizes(
 	);
 }
 
-async function cleanup(): Promise<void> {
-	const targets = await withSizes(await discoverTargets());
+type CleanupOptions = {
+	projectDir?: string[];
+	searchDepth: number;
+};
+
+async function cleanup(options: CleanupOptions): Promise<void> {
+	const projectDirectories = [
+		...new Set(
+			await Promise.all((options.projectDir ?? []).map(projectDirectory)),
+		),
+	];
+	const targets = await withSizes(
+		(
+			await Promise.all([
+				discoverModules(),
+				discoverProjectModules(projectDirectories, options.searchDepth),
+			])
+		).flat(),
+	);
 	console.log(
 		`Available disk space: ${formatSize(await availableDiskSpace())}`,
 	);
@@ -83,10 +102,27 @@ const program = new Command()
 	)
 	.addHelpText(
 		"after",
-		"\nSafety: Downloads, Documents, projects, credentials, and system files are never scanned or changed.",
+		"\nSafety: Node.js project discovery is limited to supplied directories. Only selected cleanup targets can be changed.",
+	)
+	.option(
+		"--project-dir <path>",
+		"Directory to scan for Node.js project roots; repeat for multiple directories",
+		(value, previous: string[] = []) => [...previous, value],
+	)
+	.option(
+		"--search-depth <number>",
+		"Maximum directory depth to search for Node.js project roots",
+		(value) => {
+			const depth = Number(value);
+			if (!Number.isInteger(depth) || depth < 1) {
+				throw new Error("Search depth must be a positive integer.");
+			}
+			return depth;
+		},
+		5,
 	);
 
-program.action(cleanup);
+program.action(() => cleanup(program.opts<CleanupOptions>()));
 
 try {
 	await program.parseAsync();

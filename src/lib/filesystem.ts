@@ -1,5 +1,5 @@
 import { constants } from "node:fs";
-import { access, lstat, rm } from "node:fs/promises";
+import { access, lstat, realpath, rm } from "node:fs/promises";
 import { homedir } from "node:os";
 import { relative, resolve } from "node:path";
 
@@ -12,6 +12,34 @@ export async function exists(path: string): Promise<boolean> {
 	} catch {
 		return false;
 	}
+}
+
+export async function projectDirectory(path: string): Promise<string> {
+	const resolvedHome = await realpath(home);
+	let resolvedPath: string;
+	try {
+		resolvedPath = await realpath(path);
+	} catch {
+		throw new Error(`Project directory does not exist: ${path}`);
+	}
+
+	const pathFromHome = relative(resolvedHome, resolvedPath);
+	if (
+		pathFromHome === "" ||
+		pathFromHome === ".." ||
+		pathFromHome.startsWith("../")
+	) {
+		throw new Error(
+			`Project directory must be below the current user's home directory: ${path}`,
+		);
+	}
+
+	const stats = await lstat(resolvedPath);
+	if (!stats.isDirectory() || stats.isSymbolicLink()) {
+		throw new Error(`Project directory must be a real directory: ${path}`);
+	}
+
+	return resolvedPath;
 }
 
 /** Only removes explicit cache paths below the current user's home directory. */
