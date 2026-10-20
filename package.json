@@ -5,13 +5,24 @@
 	"license": "MIT",
 	"description": "Conservative interactive cleanup utility for macOS developer tools",
 	"type": "module",
+	"bin": {
+		"mac-cleanup": "dist/index.js"
+	},
+	"files": [
+		"dist"
+	],
+	"engines": {
+		"node": ">=18"
+	},
 	"scripts": {
 		"dev": "tsx src/index.ts",
+		"build": "tsc -p tsconfig.build.json && chmod +x dist/index.js",
 		"biome:fix": "biome check --fix --unsafe",
 		"lint": "biome lint",
 		"format:check": "biome format",
 		"commitlint": "commitlint",
-		"prepare": "lefthook install",
+		"hooks:install": "lefthook install",
+		"prepack": "npm run build",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {

@@ -8,7 +8,7 @@ A conservative interactive macOS cleanup CLI for developer-tool caches, generate
 
 - macOS
 - Node.js 18 or later
-- Yarn 1.x
+- Yarn 1.x (for development and building from a checkout)
 
 Some cleanup candidates also require their native tool to be installed, such as Docker, Xcode Command Line Tools, npm, Yarn, pnpm, or Ollama.
 
@@ -21,6 +21,32 @@ git clone https://github.com/Blackfaded/mac-cleanup.git mac-cleanup
 cd mac-cleanup
 yarn install
 ```
+
+## Global Installation
+
+From the checkout, build and install the command:
+
+```bash
+yarn build
+npm install --global .
+```
+
+You can then run it from any directory:
+
+```bash
+mac-cleanup --help
+mac-cleanup --nodejs-project-dir ~/Code --search-depth 4
+```
+
+The command requires Node.js at runtime. Ensure npm's global bin directory (`npm prefix --global` followed by `/bin` on macOS) is on your `PATH`. If you use a Node.js version manager, the global installation belongs to the active Node.js version.
+
+After updating the checkout, run the build and global installation commands again. To uninstall:
+
+```bash
+npm uninstall --global mac-cleanup
+```
+
+To create a distributable package, run `npm pack`. Its `prepack` hook builds the CLI automatically. Install the resulting archive with `npm install --global ./mac-cleanup-0.1.0.tgz`; the package includes compiled JavaScript and installs only runtime dependencies.
 
 ## Usage
 
@@ -84,6 +110,12 @@ Candidates appear only when their required path exists and, where needed, their 
 # Run the CLI
 yarn dev
 
+# Compile the global CLI into dist/
+yarn build
+
+# Install development Git hooks
+yarn hooks:install
+
 # Check types
 yarn typecheck
 
@@ -97,7 +129,7 @@ yarn lint
 yarn biome:fix
 ```
 
-Lefthook installs Git hooks during `yarn install`:
+Run `yarn hooks:install` once after setting up a development checkout. Lefthook installs these Git hooks:
 
 - `pre-commit` runs linting and formatting checks.
 - `commit-msg` enforces Conventional Commit messages through Commitlint.
