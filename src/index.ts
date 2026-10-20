@@ -22,14 +22,14 @@ async function withSizes(
 }
 
 type CleanupOptions = {
-	projectDir?: string[];
+	nodejsProjectDir?: string[];
 	searchDepth: number;
 };
 
 async function cleanup(options: CleanupOptions): Promise<void> {
 	const projectDirectories = [
 		...new Set(
-			await Promise.all((options.projectDir ?? []).map(projectDirectory)),
+			await Promise.all((options.nodejsProjectDir ?? []).map(projectDirectory)),
 		),
 	];
 	const targets = await withSizes(
@@ -105,7 +105,7 @@ const program = new Command()
 		"\nSafety: Node.js project discovery is limited to supplied directories. Only selected cleanup targets can be changed.",
 	)
 	.option(
-		"--project-dir <path>",
+		"--nodejs-project-dir <path>",
 		"Directory to scan for Node.js project roots; repeat for multiple directories",
 		(value, previous: string[] = []) => [...previous, value],
 	)

@@ -34,11 +34,11 @@ Node.js project discovery is opt-in. Supply directories to find outermost Node.j
 
 | Option | Description |
 | --- | --- |
-| `--project-dir <path>` | Directory to search for Node.js project roots. Repeat for multiple directories; comma-separated paths are not supported. |
-| `--search-depth <number>` | Maximum directory depth to search for Node.js project roots. Applies only with `--project-dir`; defaults to `5`. A direct child has depth `1`. |
+| `--nodejs-project-dir <path>` | Directory to search for Node.js project roots. Repeat for multiple directories; comma-separated paths are not supported. |
+| `--search-depth <number>` | Maximum directory depth to search for Node.js project roots. Applies only with `--nodejs-project-dir`; defaults to `5`. A direct child has depth `1`. |
 
 ```bash
-yarn dev --project-dir ~/Code --project-dir ~/Clients --search-depth 4
+yarn dev --nodejs-project-dir ~/Code --nodejs-project-dir ~/Clients --search-depth 4
 ```
 
 The CLI:
@@ -73,7 +73,7 @@ Candidates appear only when their required path exists and, where needed, their 
 - Native commands manage npm, Yarn, pnpm, Docker, Xcode simulators, and Ollama data.
 - Direct directory deletion is limited to explicit paths beneath the current user's home directory.
 - Direct deletion rejects symbolic links and non-directory paths.
-- Node.js project discovery is limited to directories explicitly provided through `--project-dir`, which must be real directories below the current user's home directory.
+- Node.js project discovery is limited to directories explicitly provided through `--nodejs-project-dir`, which must be real directories below the current user's home directory.
 - Symbolic links, unreadable directories, `.git`, and `node_modules` are not scanned while discovering project roots.
 - Only matching cleanup artifacts are listed; source files are not cleanup targets.
 - A failure for one selected target does not prevent the remaining selected targets from running.
