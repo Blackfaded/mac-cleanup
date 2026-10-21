@@ -1,6 +1,6 @@
 {
 	"name": "mac-cleanup",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"private": false,
 	"license": "MIT",
 	"description": "Conservative interactive cleanup utility for macOS developer tools",
