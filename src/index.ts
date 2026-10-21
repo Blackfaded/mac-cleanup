@@ -1,45 +1,72 @@
 #!/usr/bin/env node
 
+import { createRequire } from "node:module";
 import { checkbox, confirm, input } from "@inquirer/prompts";
 import { Command } from "commander";
 
 import { availableDiskSpace } from "./lib/disk.js";
-import { projectDirectory } from "./lib/filesystem.js";
 import { formatSize } from "./lib/size.js";
-import { discoverModules } from "./modules/index.js";
-import { discoverProjectModules } from "./project_modules/index.js";
-import type { CleanupTarget } from "./types.js";
+import { AndroidModule } from "./modules/android.js";
+import { DockerModule } from "./modules/docker.js";
+import { GradleModule } from "./modules/gradle.js";
+import { NodeProjectsModule } from "./modules/node-projects.js";
+import { NpmModule } from "./modules/npm.js";
+import { NvmModule } from "./modules/nvm.js";
+import { OllamaModule } from "./modules/ollama.js";
+import { OpenCodeModule } from "./modules/opencode.js";
+import { PnpmModule } from "./modules/pnpm.js";
+import { PulumiModule } from "./modules/pulumi.js";
+import { PuppeteerModule } from "./modules/puppeteer.js";
+import { IosSimulatorRuntimeModule } from "./modules/simruntime.js";
+import { IosSimulatorModule } from "./modules/simtarget.js";
+import { XcodeModule } from "./modules/xcode.js";
+import { YarnModule } from "./modules/yarn.js";
+import type { CleanupModule } from "./types.js";
 
-async function withSizes(
-	targets: CleanupTarget[],
-): Promise<Array<CleanupTarget & { bytes?: number }>> {
-	return Promise.all(
-		targets.map(async (target) => ({
-			...target,
-			bytes: await target.size?.(),
-		})),
+const { version }: { version: string } = createRequire(import.meta.url)(
+	"../package.json",
+);
+
+const program = new Command()
+	.name("mac-cleanup")
+	.version(version)
+	.description(
+		"Conservative cleanup for macOS developer-tool caches and generated data.",
 	);
-}
 
-type CleanupOptions = {
-	nodejsProjectDir?: string[];
-	searchDepth: number;
-};
+const modules: CleanupModule[] = [
+	new NpmModule(program),
+	new YarnModule(program),
+	new PnpmModule(program),
+	new GradleModule(program),
+	new XcodeModule(program),
+	new DockerModule(program),
+	new PulumiModule(program),
+	new NvmModule(program),
+	new PuppeteerModule(program),
+	new OpenCodeModule(program),
+	new AndroidModule(program),
+	new IosSimulatorModule(program),
+	new IosSimulatorRuntimeModule(program),
+	new OllamaModule(program),
+	new NodeProjectsModule(program),
+];
 
-async function cleanup(options: CleanupOptions): Promise<void> {
-	const projectDirectories = [
-		...new Set(
-			await Promise.all((options.nodejsProjectDir ?? []).map(projectDirectory)),
-		),
-	];
-	const targets = await withSizes(
-		(
-			await Promise.all([
-				discoverModules(),
-				discoverProjectModules(projectDirectories, options.searchDepth),
-			])
-		).flat(),
-	);
+async function cleanup(): Promise<void> {
+	const targets = (
+		await Promise.all(
+			modules.map(async (module) => {
+				const targets = await module.getTargets();
+				return Promise.all(
+					targets.map(async (target) => ({
+						...target,
+						bytes: await target.size?.(),
+					})),
+				);
+			}),
+		)
+	).flat();
+
 	console.log(
 		`Available disk space: ${formatSize(await availableDiskSpace())}`,
 	);
@@ -95,36 +122,8 @@ async function cleanup(options: CleanupOptions): Promise<void> {
 	);
 }
 
-const program = new Command()
-	.name("mac-cleanup")
-	.description(
-		"Conservative cleanup for macOS developer-tool caches and generated data.",
-	)
-	.addHelpText(
-		"after",
-		"\nSafety: Node.js project discovery is limited to supplied directories. Only selected cleanup targets can be changed.",
-	)
-	.option(
-		"--nodejs-project-dir <path>",
-		"Directory to scan for Node.js project roots; repeat for multiple directories",
-		(value, previous: string[] = []) => [...previous, value],
-	)
-	.option(
-		"--search-depth <number>",
-		"Maximum directory depth to search for Node.js project roots",
-		(value) => {
-			const depth = Number(value);
-			if (!Number.isInteger(depth) || depth < 1) {
-				throw new Error("Search depth must be a positive integer.");
-			}
-			return depth;
-		},
-		5,
-	);
-
-program.action(() => cleanup(program.opts<CleanupOptions>()));
-
 try {
+	program.action(cleanup);
 	await program.parseAsync();
 } catch (error) {
 	if (error instanceof Error && error.name === "ExitPromptError") {

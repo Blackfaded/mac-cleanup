@@ -1,9 +1,10 @@
 import { join } from "node:path";
+import type { Command } from "commander";
 
 import { commandExists, run } from "../lib/command.js";
 import { exists, home } from "../lib/filesystem.js";
 import { directorySize } from "../lib/size.js";
-import type { CleanupTarget } from "../types.js";
+import type { CleanupModule, CleanupTarget } from "../types.js";
 
 const simulatorDevices = join(
 	home,
@@ -24,41 +25,52 @@ type SimctlDevices = {
 };
 
 /** Lists iOS devices individually so each can be reviewed and removed independently. */
-export async function discoverIosSimulatorTargets(): Promise<CleanupTarget[]> {
-	if (!(await exists(simulatorDevices)) || !(await commandExists("xcrun"))) {
-		return [];
-	}
+export class IosSimulatorModule implements CleanupModule {
+	readonly id = "simtarget";
 
-	try {
-		const output = await run("xcrun", ["simctl", "list", "devices", "--json"]);
-		const { devices = {} } = JSON.parse(output) as SimctlDevices;
+	constructor(protected readonly program: Command) {}
 
-		return Object.entries(devices).flatMap(([runtime, simulators]) => {
-			if (!runtime.includes(".iOS-")) return [];
+	async getTargets(): Promise<CleanupTarget[]> {
+		if (!(await exists(simulatorDevices)) || !(await commandExists("xcrun"))) {
+			return [];
+		}
 
-			return simulators.flatMap((simulator) => {
-				if (!simulator.name || !simulator.udid) return [];
+		try {
+			const output = await run("xcrun", [
+				"simctl",
+				"list",
+				"devices",
+				"--json",
+			]);
+			const { devices = {} } = JSON.parse(output) as SimctlDevices;
 
-				const { name, udid } = simulator;
-				const path = join(simulatorDevices, udid);
-				const availability =
-					simulator.isAvailable === false ? "unavailable" : "available";
-				return [
-					{
-						id: `ios-simulator-${udid}`,
-						name: `iOS simulator (${availability}): ${name}`,
-						paths: [path],
-						description: "An individually selectable iOS simulator device.",
-						consequence: "This simulator device will be permanently removed.",
-						size: () => directorySize(path),
-						clean: async () => {
-							await run("xcrun", ["simctl", "delete", udid]);
+			return Object.entries(devices).flatMap(([runtime, simulators]) => {
+				if (!runtime.includes(".iOS-")) return [];
+
+				return simulators.flatMap((simulator) => {
+					if (!simulator.name || !simulator.udid) return [];
+
+					const { name, udid } = simulator;
+					const path = join(simulatorDevices, udid);
+					const availability =
+						simulator.isAvailable === false ? "unavailable" : "available";
+					return [
+						{
+							id: `ios-simulator-${udid}`,
+							name: `iOS simulator (${availability}): ${name}`,
+							paths: [path],
+							description: "An individually selectable iOS simulator device.",
+							consequence: "This simulator device will be permanently removed.",
+							size: () => directorySize(path),
+							clean: async () => {
+								await run("xcrun", ["simctl", "delete", udid]);
+							},
 						},
-					},
-				];
+					];
+				});
 			});
-		});
-	} catch {
-		return [];
+		} catch {
+			return [];
+		}
 	}
 }

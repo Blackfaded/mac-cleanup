@@ -1,8 +1,9 @@
 import { join } from "node:path";
+import type { Command } from "commander";
 
 import { commandExists, run } from "../lib/command.js";
 import { exists, home } from "../lib/filesystem.js";
-import type { CleanupTarget } from "../types.js";
+import type { CleanupModule, CleanupTarget } from "../types.js";
 
 function ollamaBytes(size: string): number | undefined {
 	const match = /^(\d+(?:\.\d+)?)([KMGT]?B)$/i.exec(size);
@@ -24,36 +25,43 @@ function ollamaBytes(size: string): number | undefined {
 		: Number(value) * multiplier[unit];
 }
 
-export async function discoverOllamaTargets(): Promise<CleanupTarget[]> {
-	const path = join(home, ".ollama", "models");
-	if (!(await exists(path)) || !(await commandExists("ollama"))) return [];
+export class OllamaModule implements CleanupModule {
+	readonly id = "ollama";
 
-	try {
-		const output = await run("ollama", ["list"]);
-		return output
-			.trim()
-			.split("\n")
-			.slice(1)
-			.flatMap<CleanupTarget>((line) => {
-				const [name, , size] = line.trim().split(/\s+/);
-				if (name === undefined || size === undefined || name === "") return [];
+	constructor(protected readonly program: Command) {}
 
-				return [
-					{
-						id: `ollama-${name}`,
-						name: `Ollama model: ${name}`,
-						paths: [path],
-						description: "A locally downloaded Ollama language model.",
-						consequence:
-							"The model will be unavailable until downloaded again with Ollama.",
-						size: async () => ollamaBytes(size),
-						clean: async () => {
-							await run("ollama", ["rm", name]);
+	async getTargets(): Promise<CleanupTarget[]> {
+		const path = join(home, ".ollama", "models");
+		if (!(await exists(path)) || !(await commandExists("ollama"))) return [];
+
+		try {
+			const output = await run("ollama", ["list"]);
+			return output
+				.trim()
+				.split("\n")
+				.slice(1)
+				.flatMap<CleanupTarget>((line) => {
+					const [name, , size] = line.trim().split(/\s+/);
+					if (name === undefined || size === undefined || name === "")
+						return [];
+
+					return [
+						{
+							id: `ollama-${name}`,
+							name: `Ollama model: ${name}`,
+							paths: [path],
+							description: "A locally downloaded Ollama language model.",
+							consequence:
+								"The model will be unavailable until downloaded again with Ollama.",
+							size: async () => ollamaBytes(size),
+							clean: async () => {
+								await run("ollama", ["rm", name]);
+							},
 						},
-					},
-				];
-			});
-	} catch {
-		return [];
+					];
+				});
+		} catch {
+			return [];
+		}
 	}
 }

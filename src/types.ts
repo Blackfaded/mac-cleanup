@@ -9,4 +9,7 @@ export type CleanupTarget = {
 	clean: () => Promise<void>;
 };
 
-export type TargetDiscovery = () => Promise<CleanupTarget[]>;
+export interface CleanupModule {
+	id: string;
+	getTargets(): Promise<CleanupTarget[]>;
+}

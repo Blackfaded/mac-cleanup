@@ -129,6 +129,50 @@ yarn lint
 yarn biome:fix
 ```
 
+### Adding a module
+
+Modules export classes implementing `CleanupModule` from `src/types.ts`. Import a module class and add an instance to the `modules` array at the top of the entrypoint, `src/index.ts`, passing the CLI program to its constructor:
+
+```ts
+import { ExampleModule } from "./modules/example.js";
+
+const modules: CleanupModule[] = [
+	// Other embedded modules…
+	new ExampleModule(program),
+];
+```
+
+For example, `src/modules/example.ts`:
+
+```ts
+import type { Command } from "commander";
+
+import type { CleanupModule, CleanupTarget } from "../types.js";
+
+type ExampleOptions = { exampleCache?: string };
+
+export class ExampleModule implements CleanupModule {
+	readonly id = "example";
+
+	constructor(protected readonly program: Command) {
+		program.option("--example-cache <path>", "Cache to inspect");
+	}
+
+	async getTargets(): Promise<CleanupTarget[]> {
+		const options = this.program.opts<ExampleOptions>();
+		if (!options.exampleCache) return [];
+		// Validate the path and return selectable cleanup targets here.
+		return [];
+	}
+}
+```
+
+The entrypoint creates the CLI program before constructing the modules. Every module stores the program in its constructor and adds any CLI options before argument parsing, so module-owned options are available in `--help`. Modules read parsed option values in `getTargets()`. After parsing, `program.action(cleanup)` runs the cleanup flow, which calls each module's parameterless `getTargets()` concurrently and combines their results in array order. Each module owns its option types, validation, availability checks, and target definitions. Importing a module only defines its class; construction configures its CLI options without collecting or cleaning targets. Module IDs must be unique, and target IDs must be unique across all modules.
+
+The Node.js project module in `src/modules/node-projects.ts` owns `--nodejs-project-dir` and `--search-depth`, including directory normalization and validation. Modules without CLI options still store the program with `constructor(protected readonly program: Command) {}`.
+
+### Git hooks
+
 Run `yarn hooks:install` once after setting up a development checkout. Lefthook installs these Git hooks:
 
 - `pre-commit` runs linting and formatting checks.
